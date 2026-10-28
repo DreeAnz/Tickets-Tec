@@ -146,7 +146,7 @@ model SlaPriority {
 /// Ticket - Entidad central del sistema
 model Ticket {
   id          String       @id @default(uuid()) @db.Uuid
-  folio       String       @unique @db.VarChar(20) // TECNM-YYYY-XXXX (autogenerado en FASE 2)
+  folio       String       @default("") @unique @db.VarChar(20) // TECNM-YYYY-XXXX (autogenerado en FASE 2)
   titulo      String       @db.VarChar(200)
   descripcion String       @db.Text
   serviceType ServiceType  @default(INCIDENTE) @map("service_type")
