@@ -1,0 +1,137 @@
+.main {
+  min-height: 100vh;
+  background: #f4f6fb;
+  padding: 2rem 1.5rem;
+}
+
+.header {
+  max-width: 900px;
+  margin: 0 auto 1.75rem;
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.header h1 {
+  margin: 0.35rem 0 0.15rem;
+  font-size: 1.65rem;
+  color: #10203f;
+}
+
+.email {
+  margin: 0;
+  color: #5c677d;
+  font-size: 0.9rem;
+}
+
+.badge {
+  display: inline-block;
+  padding: 0.25rem 0.6rem;
+  background: #e0e7ff;
+  color: #1d4ed8;
+  border-radius: 999px;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.logout {
+  padding: 0.6rem 1rem;
+  background: #ffffff;
+  border: 1px solid #d8dfe9;
+  border-radius: 8px;
+  font-size: 0.88rem;
+  font-weight: 600;
+  color: #33415c;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.logout:hover {
+  border-color: #b91c1c;
+  color: #b91c1c;
+}
+
+.grid {
+  max-width: 900px;
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
+  gap: 1.25rem;
+}
+
+.card {
+  background: #ffffff;
+  border: 1px solid #e3e8f0;
+  border-radius: 14px;
+  padding: 1.5rem;
+  box-shadow: 0 6px 18px rgba(16, 32, 64, 0.06);
+}
+
+.card h2 {
+  margin: 0 0 1rem;
+  font-size: 1.05rem;
+  color: #10203f;
+}
+
+.tabla {
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
+}
+
+.tabla > div {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+}
+
+.tabla dt {
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: #8a94a6;
+}
+
+.tabla dd {
+  margin: 0;
+  font-size: 0.88rem;
+  color: #33415c;
+  word-break: break-all;
+}
+
+.rol {
+  display: inline-block;
+  padding: 0.2rem 0.6rem;
+  background: #f1f5f9;
+  border: 1px solid #e2e8f0;
+  border-radius: 6px;
+  font-weight: 700;
+  font-size: 0.8rem;
+}
+
+.lista {
+  margin: 0 0 1rem;
+  padding-left: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  font-size: 0.88rem;
+  color: #33415c;
+}
+
+.link {
+  font-size: 0.85rem;
+  color: #1d4ed8;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.link:hover {
+  text-decoration: underline;
+}

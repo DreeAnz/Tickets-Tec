@@ -1,0 +1,223 @@
+// =====================================================================
+// TECNM - Sistema de Gestión de Tickets de Mantenimiento
+// Esquema Prisma - Alineado a ITIL v3
+// =====================================================================
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+// =====================================================================
+// ENUMS - Tipos PostgreSQL nativos
+// =====================================================================
+
+/// Tipo de servicio ITIL
+enum ServiceType {
+  INCIDENTE /// Interrupción no planificada de un servicio
+  PETICION_SERVICIO /// Solicitud estándar de servicio
+}
+
+/// Estados del ciclo de vida del ticket (ITIL)
+enum TicketStatus {
+  REGISTRADO
+  TRABAJO_EN_CURSO
+  SUSPENDIDO
+  RESUELTO
+  CERRADO
+}
+
+/// Nivel de urgencia (qué tan rápido se necesita)
+enum UrgencyLevel {
+  BAJA
+  MEDIA
+  ALTA
+  CRITICA
+}
+
+/// Nivel de impacto (cuántos usuarios/servicios afecta)
+enum ImpactLevel {
+  BAJO
+  MEDIO
+  ALTO
+  CRITICO
+}
+
+// =====================================================================
+// MODELOS
+// =====================================================================
+
+/// Roles del sistema
+model Role {
+  id          String   @id @default(uuid()) @db.Uuid
+  nombre      String   @unique @db.VarChar(50)
+  descripcion String?  @db.VarChar(255)
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  users User[]
+
+  @@map("roles")
+}
+
+/// Usuarios del sistema (sincronizados con Supabase Auth en FASE 3)
+model User {
+  id             String   @id @default(uuid()) @db.Uuid
+  authId         String   @unique @map("auth_id") @db.Uuid // ID de auth.users
+  email          String   @unique @db.VarChar(150)
+  nombreCompleto String   @map("nombre_completo") @db.VarChar(200)
+  numeroEmpleado String?  @unique @map("numero_empleado") @db.VarChar(30)
+  telefono       String?  @db.VarChar(20)
+  roleId         String   @map("role_id") @db.Uuid
+  locationId     String?  @map("location_id") @db.Uuid
+  activo         Boolean  @default(true)
+  createdAt      DateTime @default(now()) @map("created_at")
+  updatedAt      DateTime @updatedAt @map("updated_at")
+
+  role     Role      @relation(fields: [roleId], references: [id])
+  location Location? @relation(fields: [locationId], references: [id])
+
+  ticketsSolicitados  Ticket[]             @relation("SolicitanteTickets")
+  ticketsAsignados    Ticket[]             @relation("TecnicoTickets")
+  statusChanges       StatusHistory[]
+  satisfactionSurveys SatisfactionSurvey[]
+
+  @@index([roleId])
+  @@map("users")
+}
+
+/// Ubicaciones / Sedes del TecNM
+model Location {
+  id        String   @id @default(uuid()) @db.Uuid
+  nombre    String   @unique @db.VarChar(150)
+  codigo    String   @unique @db.VarChar(30)
+  direccion String?  @db.VarChar(300)
+  activo    Boolean  @default(true)
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  users   User[]
+  tickets Ticket[]
+
+  @@map("locations")
+}
+
+/// Categorías de servicio (jerárquicas: categoría padre / subcategoría)
+model ServiceCategory {
+  id          String   @id @default(uuid()) @db.Uuid
+  nombre      String   @unique @db.VarChar(100)
+  descripcion String?  @db.VarChar(300)
+  parentId    String?  @map("parent_id") @db.Uuid
+  activo      Boolean  @default(true)
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  parent   ServiceCategory?  @relation("CategoryTree", fields: [parentId], references: [id])
+  children ServiceCategory[] @relation("CategoryTree")
+
+  tickets Ticket[]
+
+  @@index([parentId])
+  @@map("service_categories")
+}
+
+/// Matriz SLA - Define tiempos de respuesta y resolución por prioridad
+model SlaPriority {
+  id              String   @id @default(uuid()) @db.Uuid
+  nombre          String   @unique @db.VarChar(50) // Crítica, Alta, Media, Baja
+  horasRespuesta  Int      @map("horas_respuesta")
+  horasResolucion Int      @map("horas_resolucion")
+  color           String?  @db.VarChar(20) // Hex para UI
+  orden           Int      @default(0) // Para ordenamiento
+  activo          Boolean  @default(true)
+  createdAt       DateTime @default(now()) @map("created_at")
+  updatedAt       DateTime @updatedAt @map("updated_at")
+
+  tickets Ticket[]
+
+  @@map("sla_priorities")
+}
+
+/// Ticket - Entidad central del sistema
+model Ticket {
+  id          String       @id @default(uuid()) @db.Uuid
+  folio       String       @default("") @unique @db.VarChar(20) // TECNM-YYYY-XXXX (autogenerado en FASE 2)
+  titulo      String       @db.VarChar(200)
+  descripcion String       @db.Text
+  serviceType ServiceType  @default(INCIDENTE) @map("service_type")
+  status      TicketStatus @default(REGISTRADO)
+  urgencia    UrgencyLevel @default(MEDIA)
+  impacto     ImpactLevel  @default(MEDIO)
+
+  // Relaciones (FKs)
+  solicitanteId String  @map("solicitante_id") @db.Uuid
+  tecnicoId     String? @map("tecnico_id") @db.Uuid
+  locationId    String  @map("location_id") @db.Uuid
+  categoryId    String  @map("category_id") @db.Uuid
+  slaPriorityId String? @map("sla_priority_id") @db.Uuid // Asignado por trigger (FASE 2)
+
+  // Fechas clave del ciclo de vida
+  fechaLimite DateTime? @map("fecha_limite") // Calculada por trigger (FASE 2)
+  resueltoAt  DateTime? @map("resuelto_at")
+  cerradoAt   DateTime? @map("cerrado_at")
+
+  // Auditoría
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  // Relaciones navegables
+  solicitante User            @relation("SolicitanteTickets", fields: [solicitanteId], references: [id])
+  tecnico     User?           @relation("TecnicoTickets", fields: [tecnicoId], references: [id])
+  location    Location        @relation(fields: [locationId], references: [id])
+  category    ServiceCategory @relation(fields: [categoryId], references: [id])
+  slaPriority SlaPriority?    @relation(fields: [slaPriorityId], references: [id])
+
+  statusHistory      StatusHistory[]
+  satisfactionSurvey SatisfactionSurvey?
+
+  @@index([status])
+  @@index([solicitanteId])
+  @@index([tecnicoId])
+  @@index([slaPriorityId])
+  @@index([categoryId])
+  @@index([locationId])
+  @@index([createdAt])
+  @@map("tickets")
+}
+
+/// Historial de cambios de estado (Auditoría ITIL)
+model StatusHistory {
+  id             String       @id @default(uuid()) @db.Uuid
+  ticketId       String       @map("ticket_id") @db.Uuid
+  estadoAnterior TicketStatus @map("estado_anterior")
+  estadoNuevo    TicketStatus @map("estado_nuevo")
+  comentario     String?      @db.Text
+  cambiadoPor    String       @map("cambiado_por") @db.Uuid
+  createdAt      DateTime     @default(now()) @map("created_at")
+
+  ticket  Ticket @relation(fields: [ticketId], references: [id], onDelete: Cascade)
+  usuario User   @relation(fields: [cambiadoPor], references: [id])
+
+  @@index([ticketId])
+  @@map("status_history")
+}
+
+/// Encuesta de satisfacción (CSAT)
+model SatisfactionSurvey {
+  id           String   @id @default(uuid()) @db.Uuid
+  ticketId     String   @unique @map("ticket_id") @db.Uuid
+  evaluadorId  String   @map("evaluador_id") @db.Uuid
+  calificacion Int      @db.SmallInt // 1-5 estrellas
+  comentario   String?  @db.Text
+  createdAt    DateTime @default(now()) @map("created_at")
+
+  ticket    Ticket @relation(fields: [ticketId], references: [id], onDelete: Cascade)
+  evaluador User   @relation(fields: [evaluadorId], references: [id])
+
+  @@map("satisfaction_surveys")
+}

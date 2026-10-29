@@ -1,0 +1,105 @@
+.main {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #f4f6fb;
+  padding: 1.5rem;
+}
+
+.card {
+  width: 100%;
+  max-width: 420px;
+  background: #ffffff;
+  border: 1px solid #e3e8f0;
+  border-radius: 14px;
+  padding: 2.25rem;
+  box-shadow: 0 10px 30px rgba(16, 32, 64, 0.08);
+}
+
+.card h1 {
+  margin: 0 0 0.35rem;
+  font-size: 1.5rem;
+  color: #10203f;
+}
+
+.subtitulo {
+  margin: 0 0 1.5rem;
+  color: #5c677d;
+  font-size: 0.85rem;
+}
+
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.form label {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: #33415c;
+  margin-top: 0.75rem;
+}
+
+.form input {
+  padding: 0.65rem 0.8rem;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  font-size: 0.95rem;
+  outline: none;
+  transition: border-color 0.15s ease;
+}
+
+.form input:focus {
+  border-color: #1d4ed8;
+}
+
+.error {
+  margin-top: 1rem;
+  padding: 0.6rem 0.8rem;
+  background: #fef2f2;
+  border: 1px solid #fecaca;
+  color: #b91c1c;
+  font-size: 0.82rem;
+  border-radius: 8px;
+}
+
+.form button {
+  margin-top: 1.25rem;
+  padding: 0.7rem 1rem;
+  background: #1d4ed8;
+  color: #ffffff;
+  border: none;
+  border-radius: 8px;
+  font-weight: 600;
+  font-size: 0.95rem;
+  cursor: pointer;
+  transition: background 0.15s ease;
+}
+
+.form button:hover:not(:disabled) {
+  background: #1e40af;
+}
+
+.form button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.pie {
+  margin-top: 1.5rem;
+  font-size: 0.85rem;
+  color: #5c677d;
+  text-align: center;
+}
+
+.pie a {
+  color: #1d4ed8;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.pie a:hover {
+  text-decoration: underline;
+}
